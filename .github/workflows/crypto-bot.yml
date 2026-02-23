@@ -1,0 +1,46 @@
+name: Monitor de Precio Bitcoin
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 12:00 UTC
+    - cron: '0 12 * * *'
+  workflow_dispatch: # Permite ejecutarlo a mano para probar
+
+jobs:
+  track-crypto:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Obtener precio de Bitcoin y Ethereum
+        run: |
+          # Consultar la API de CoinGecko
+          RESPONSE=$(curl -s "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd")
+          BTC_PRICE=$(echo $RESPONSE | jq -r '.bitcoin.usd')
+          ETH_PRICE=$(echo $RESPONSE | jq -r '.ethereum.usd')
+          FECHA=$(date +'%Y-%m-%d %H:%M:%S')
+          
+          # Crear el archivo si no existe con encabezado
+          if [ ! -f historial_precios.md ]; then
+            echo "# 📈 Historial de Criptomonedas" > historial_precios.md
+            echo "Registro automatizado de precios diarios." >> historial_precios.md
+            echo "" >> historial_precios.md
+            echo "| Fecha y Hora | Activo | Precio (USD) |" >> historial_precios.md
+            echo "|---|---|---|" >> historial_precios.md
+          fi
+          
+          # Agregar los datos a la tabla
+          echo "| $FECHA | ₿ Bitcoin | $BTC_PRICE USD |" >> historial_precios.md
+          echo "| $FECHA | Ξ Ethereum | $ETH_PRICE USD |" >> historial_precios.md
+
+      - name: Subir cambios a GitHub
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add historial_precios.md
+          git commit -m "update: precios cripto $(date +'%Y-%m-%d')" || exit 0
+          git push
