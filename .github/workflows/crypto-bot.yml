@@ -54,4 +54,12 @@ jobs:
           done
 
       - name: Subir cambios
-        run: git push
+        run: |
+            # Cambia esto por tus datos reales de GitHub
+            git config --global user.name "AbelMachaca"
+            git config --global user.email "abelmachaca99@gmail.com"
+            
+            git add historial_precios.md
+            # El '|| exit 0' evita que el bot falle si no hay cambios que subir
+            git commit -m "update: registro técnico de mercado" || exit 0
+            git push origin main
