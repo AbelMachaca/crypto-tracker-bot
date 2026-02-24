@@ -2,7 +2,8 @@ name: Monitor de Precio Bitcoin
 
 on:
   schedule:
-    - cron: '0 */3 * * *'
+    # Se ejecuta cada 2 horas, todos los días del año (24/7)
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 jobs:
@@ -15,55 +16,40 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Decidir actividad y actualizar
+      - name: Decidir actividad
         run: |
-          
-          NUM_COMMITS=$((RANDOM % 3))
+
+          NUM_COMMITS=$((RANDOM % 4))
           
           if [ $NUM_COMMITS -eq 0 ]; then
-            echo "Esta vez el bot no hará cambios."
+            echo "El bot decidió no realizar commits en esta franja horaria."
             exit 0
           fi
 
           for i in $(seq 1 $NUM_COMMITS); do
-            # Consultar API
             RESPONSE=$(curl -s "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd")
             BTC_PRICE=$(echo $RESPONSE | jq -r '.bitcoin.usd')
             ETH_PRICE=$(echo $RESPONSE | jq -r '.ethereum.usd')
             FECHA=$(date +'%Y-%m-%d %H:%M:%S')
 
-            # Crear archivo si no existe
             if [ ! -f historial_precios.md ]; then
               echo "# 📈 Historial de Criptomonedas" > historial_precios.md
               echo "| Fecha y Hora | Activo | Precio (USD) |" >> historial_precios.md
               echo "|---|---|---|" >> historial_precios.md
             fi
 
-            # Agregar datos
             echo "| $FECHA | ₿ Bitcoin | $BTC_PRICE USD |" >> historial_precios.md
             echo "| $FECHA | Ξ Ethereum | $ETH_PRICE USD |" >> historial_precios.md
             
-            # Configurar git y hacer commit por cada iteración
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "AbelMachaca"
+            git config --global user.email "107734261+AbelMachaca@users.noreply.github.com"
             git add historial_precios.md
-            git commit -m "update: registro técnico de mercado ($i/$NUM_COMMITS)"
+            git commit --author="AbelMachaca <107734261+AbelMachaca@users.noreply.github.com>" -m "update: registro técnico de mercado ($i/$NUM_COMMITS)" || exit 0
             
-            # Esperar un poco entre commits para que la hora sea distinta
-            sleep 10
+            sleep 15
           done
 
       - name: Subir cambios
         run: |
-          # Configuración con tu ID de usuario de GitHub para privacidad
-          git config --global user.name "AbelMachaca"
-          git config --global user.email "107734261+AbelMachaca@users.noreply.github.com"
-          
-          # Añadir cambios al repositorio
-          git add historial_precios.md
-          
-          # Commit forzando tu autoría
-          git commit --author="AbelMachaca <107734261+AbelMachaca@users.noreply.github.com>" -m "update: registro técnico de mercado" || echo "No hay cambios para commitear"
-          
-          # Subir a la rama principal
-          git push origin main
+                # Solo necesitamos hacer el push, porque los commits ya se hicieron arriba
+                git push origin main
