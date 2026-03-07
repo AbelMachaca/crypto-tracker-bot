@@ -335,3 +335,5 @@ Registro automatizado de precios diarios.
 | 2026-03-07 04:53:45 | Ξ Ethereum | 1976.26 USD |
 | 2026-03-07 04:54:00 | ₿ Bitcoin | 68102 USD |
 | 2026-03-07 04:54:00 | Ξ Ethereum | 1976.23 USD |
+| 2026-03-07 06:24:37 | ₿ Bitcoin | 67941 USD |
+| 2026-03-07 06:24:37 | Ξ Ethereum | 1976.15 USD |
